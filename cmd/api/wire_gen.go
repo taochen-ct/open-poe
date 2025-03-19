@@ -34,7 +34,7 @@ func wireApp(configuration *config.Configuration, lumberjackLogger *lumberjack.L
 		return nil, nil, err
 	}
 	repo := user.NewRepository(data, zapLogger)
-	service := user.NewService(repo, client, sonyflake)
+	service := user.NewService(repo, client, sonyflake, zapLogger)
 	handler := user.NewHandler(zapLogger, configuration, service)
 	engine := routes.CreateRouter(recovery, cors, limiter, handler)
 	server := newHttpServer(configuration, engine)
