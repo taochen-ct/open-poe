@@ -1,8 +1,8 @@
 package command
 
 import (
-	commandHanler "awesomeProject/internal/command/handler"
 	"github.com/spf13/cobra"
+	commandHanler "open-poe/internal/command/handler"
 )
 
 type Command struct {

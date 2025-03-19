@@ -1,19 +1,21 @@
 package routes
 
 import (
-	"awesomeProject/internal/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
 	"net/http"
+	"open-poe/internal/cases/user"
+	"open-poe/internal/middleware"
 )
 
 // ProviderSet is router providers.
-var ProviderSet = wire.NewSet(CreateBaseRouter)
+var ProviderSet = wire.NewSet(CreateRouter)
 
-func CreateBaseRouter(
+func CreateRouter(
 	recoveryMiddleware *middleware.Recovery,
 	corsMiddleware *middleware.Cors,
 	limiterMiddleware *middleware.Limiter,
+	userHandler *user.Handler,
 ) *gin.Engine {
 
 	// create new gin engine
@@ -27,26 +29,9 @@ func CreateBaseRouter(
 	)
 	// test service health
 	router.GET("/ping", func(c *gin.Context) { c.String(http.StatusOK, "pong") })
-
 	// create api group
-	apiGroup := router.Group("/api")
-	// register customer api
-	if err := RegisterApiRouter(apiGroup); err != nil {
-		panic(err)
-	}
+	apiGroup := router.Group("/api/v1")
+	RegisterTestRoute(apiGroup)
+	RegisterUserRoute(apiGroup, userHandler)
 	return router
-}
-
-func RegisterApiRouter(router *gin.RouterGroup) (err error) {
-	routeFuncs := []func(*gin.RouterGroup) error{
-		// add register func here
-		RegisterTestRoute,
-	}
-
-	for _, register := range routeFuncs {
-		if err = register(router); err != nil {
-			return err
-		}
-	}
-	return nil
 }

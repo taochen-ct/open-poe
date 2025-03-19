@@ -1,9 +1,6 @@
 package main
 
 import (
-	"awesomeProject/config"
-	"awesomeProject/internal/command"
-	"awesomeProject/pkg/path"
 	"context"
 	"fmt"
 	"github.com/duke-git/lancet/v2/fileutil"
@@ -15,6 +12,9 @@ import (
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"log"
+	"open-poe/config"
+	"open-poe/internal/command"
+	"open-poe/pkg/path"
 	"os"
 	"os/signal"
 	"path/filepath"

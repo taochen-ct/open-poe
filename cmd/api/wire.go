@@ -4,15 +4,16 @@
 package main
 
 import (
-	"awesomeProject/config"
-	"awesomeProject/internal/command"
-	commandHandler "awesomeProject/internal/command/handler"
-	"awesomeProject/internal/compo"
-	"awesomeProject/internal/middleware"
-	"awesomeProject/routes"
 	"github.com/google/wire"
 	"go.uber.org/zap"
 	"gopkg.in/natefinch/lumberjack.v2"
+	"open-poe/config"
+	"open-poe/internal/cases/user"
+	"open-poe/internal/command"
+	commandHandler "open-poe/internal/command/handler"
+	"open-poe/internal/compo"
+	"open-poe/internal/middleware"
+	"open-poe/routes"
 )
 
 // wireApp dependency inject
@@ -21,6 +22,7 @@ func wireApp(*config.Configuration, *lumberjack.Logger, *zap.Logger) (*App, func
 		wire.Build(
 			compo.ProviderSet,
 			middleware.ProviderSet,
+			user.ProviderSet,
 			routes.ProviderSet,
 			newHttpServer,
 			newApp,

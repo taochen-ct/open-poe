@@ -5,11 +5,11 @@ import (
 	"net/http"
 )
 
-func RegisterTestRoute(router *gin.RouterGroup) error {
+func RegisterTestRoute(router *gin.RouterGroup) {
 	router.GET("/test", func(c *gin.Context) {
 		res := make(map[string]string)
 		res["message"] = "Hello World!"
 		c.JSON(http.StatusOK, res)
 	})
-	return nil
+	return
 }

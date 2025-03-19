@@ -1,11 +1,11 @@
 package middleware
 
 import (
-	"awesomeProject/internal/compo"
-	"awesomeProject/internal/pkg/response"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/time/rate"
 	"net/http"
+	"open-poe/internal/compo"
+	"open-poe/internal/pkg/response"
 	"time"
 )
 

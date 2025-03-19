@@ -1,4 +1,4 @@
-module awesomeProject
+module open-poe
 
 go 1.23.0
 
@@ -9,6 +9,7 @@ require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-redis/redis/extra/redisotel v0.3.0
 	github.com/go-redis/redis/v8 v8.11.5
+	github.com/google/uuid v1.4.0
 	github.com/google/wire v0.6.0
 	github.com/sony/sonyflake v1.2.0
 	github.com/spf13/cobra v1.9.1

@@ -7,14 +7,15 @@
 package main
 
 import (
-	"awesomeProject/config"
-	"awesomeProject/internal/command"
-	"awesomeProject/internal/command/handler"
-	"awesomeProject/internal/compo"
-	"awesomeProject/internal/middleware"
-	"awesomeProject/routes"
 	"go.uber.org/zap"
 	"gopkg.in/natefinch/lumberjack.v2"
+	"open-poe/config"
+	"open-poe/internal/cases/user"
+	"open-poe/internal/command"
+	"open-poe/internal/command/handler"
+	"open-poe/internal/compo"
+	"open-poe/internal/middleware"
+	"open-poe/routes"
 )
 
 // Injectors from wire.go:
@@ -25,10 +26,21 @@ func wireApp(configuration *config.Configuration, lumberjackLogger *lumberjack.L
 	cors := middleware.NewCorsMiddleware()
 	limiterManager := compo.NewLimiterManager()
 	limiter := middleware.NewLimiterMiddleware(limiterManager)
-	engine := routes.CreateBaseRouter(recovery, cors, limiter)
+	db := compo.NewDB(configuration, zapLogger)
+	client := compo.NewRedis(configuration, zapLogger)
+	sonyflake := compo.NewSonyFlake()
+	data, cleanup, err := compo.NewData(zapLogger, db, client, sonyflake)
+	if err != nil {
+		return nil, nil, err
+	}
+	repo := user.NewRepository(data, zapLogger)
+	service := user.NewService(repo, client, sonyflake)
+	handler := user.NewHandler(zapLogger, configuration, service)
+	engine := routes.CreateRouter(recovery, cors, limiter, handler)
 	server := newHttpServer(configuration, engine)
 	app := newApp(configuration, zapLogger, server)
 	return app, func() {
+		cleanup()
 	}, nil
 }
 

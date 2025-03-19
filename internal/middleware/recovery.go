@@ -1,10 +1,10 @@
 package middleware
 
 import (
-	"awesomeProject/internal/pkg/response"
 	"github.com/gin-gonic/gin"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"net/http"
+	"open-poe/internal/pkg/response"
 )
 
 type Recovery struct {

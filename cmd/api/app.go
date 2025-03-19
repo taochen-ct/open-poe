@@ -1,13 +1,13 @@
 package main
 
 import (
-	"awesomeProject/config"
 	"context"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"log"
 	"net/http"
+	"open-poe/config"
 )
 
 type App struct {

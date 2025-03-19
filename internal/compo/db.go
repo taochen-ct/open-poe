@@ -1,8 +1,6 @@
 package compo
 
 import (
-	"awesomeProject/config"
-	"awesomeProject/pkg/path"
 	"context"
 	"fmt"
 	"github.com/go-redis/redis/extra/redisotel"
@@ -16,6 +14,8 @@ import (
 	"gorm.io/gorm/schema"
 	"io"
 	"log"
+	"open-poe/config"
+	"open-poe/pkg/path"
 	"os"
 	"path/filepath"
 	"strconv"
