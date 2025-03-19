@@ -34,11 +34,7 @@ func (m *Limiter) Handler(key ...string) gin.HandlerFunc {
 		l := m.lm.GetLimiter(rate.Every(50*time.Millisecond), 300, limiterKey)
 
 		if !l.L.Allow() {
-			ctx.JSON(http.StatusTooManyRequests, response.Response{
-				ErrorCode: response.TooManyRequests,
-				Data:      nil,
-				Message:   "Too many requests",
-			})
+			response.Fail(ctx, http.StatusTooManyRequests, response.TooManyRequests, "too many request")
 			return
 		}
 	}

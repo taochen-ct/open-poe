@@ -42,7 +42,7 @@ func (s *Service) Register(ctx *gin.Context, param *request.Register) (*User, er
 
 	u, err := s.repo.Create(ctx, userInstance)
 	if err != nil {
-		return nil, response.InternalServer("register fail; create user failed, maybe already exists")
+		return nil, response.BadRequest("register fail; create user failed; " + err.Error())
 
 	}
 	return u, nil

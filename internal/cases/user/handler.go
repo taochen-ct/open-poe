@@ -4,7 +4,6 @@ import (
 	"github.com/duke-git/lancet/v2/validator"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"net/http"
 	"open-poe/config"
 	"open-poe/internal/pkg/request"
 	"open-poe/internal/pkg/response"
@@ -30,16 +29,16 @@ func (h *Handler) Register(ctx *gin.Context) {
 		response.ServiceError(ctx, err)
 		return
 	}
-	if validator.IsEmail(form.UserEmail) || validator.IsEmptyString(form.Username) {
+	if !validator.IsEmail(form.UserEmail) || validator.IsEmptyString(form.Username) {
 		response.BadRequestError(
 			ctx,
-			response.BadRequest("params error; email or name maybe null", http.StatusBadRequest),
+			response.BadRequest("params error; email or name maybe null", response.ValidateError),
 		)
 		return
 	}
 	u, err := h.service.Register(ctx, &form)
 	if err != nil {
-		response.BusinessError(ctx, err)
+		response.BadRequestError(ctx, err)
 		return
 	}
 

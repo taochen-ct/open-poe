@@ -1,9 +1,9 @@
 package user
 
 import (
-	"errors"
 	"github.com/duke-git/lancet/v2/cryptor"
 	"github.com/google/uuid"
+	"github.com/pkg/errors"
 	"gorm.io/gorm"
 	"time"
 )
@@ -21,13 +21,24 @@ type User struct {
 }
 
 // BeforeCreate generate uuid, crypt password, check is exist
-func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
-	if err = tx.Model(&User{}).Where("user_email = ?", u.Email).First(&User{}).Error; err != nil {
+func (u *User) BeforeCreate(tx *gorm.DB) error {
+	err := tx.Model(&User{}).Where("user_email = ? and is_deleted = false", u.Email).First(&User{}).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return err
+	}
+	if err == nil {
 		return errors.New("email already taken")
 	}
+	u.CreatedAt = time.Now()
+	u.UpdateAt = time.Now()
 	u.Password = cryptor.Sha256(u.Password)
 	u.UID = uuid.New().String()
-	return
+	return nil
+}
+
+func (u *User) BeforeUpdate(tx *gorm.DB) error {
+	u.UpdateAt = time.Now()
+	return nil
 }
 
 func (*User) TableName() string {
