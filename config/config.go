@@ -6,4 +6,5 @@ type Configuration struct {
 	Database Database    `mapstructure:"database" yaml:"database"`
 	Redis    Redis       `mapstructure:"redis" yaml:"redis"`
 	Limiter  Limiter     `mapstructure:"limiter" yaml:"limiter"`
+	Jwt      Jwt         `mapstructure:"jwt" yaml:"jwt"`
 }

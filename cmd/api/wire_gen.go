@@ -24,8 +24,6 @@ import (
 func wireApp(configuration *config.Configuration, lumberjackLogger *lumberjack.Logger, zapLogger *zap.Logger) (*App, func(), error) {
 	recovery := middleware.NewRecoveryMiddleware(lumberjackLogger)
 	cors := middleware.NewCorsMiddleware()
-	limiterManager := compo.NewLimiterManager()
-	limiter := middleware.NewLimiterMiddleware(limiterManager)
 	db := compo.NewDB(configuration, zapLogger)
 	client := compo.NewRedis(configuration, zapLogger)
 	sonyflake := compo.NewSonyFlake()
@@ -33,10 +31,16 @@ func wireApp(configuration *config.Configuration, lumberjackLogger *lumberjack.L
 	if err != nil {
 		return nil, nil, err
 	}
+	jwtRepo := user.NewJwtRepository(data, zapLogger)
 	repo := user.NewRepository(data, zapLogger)
 	service := user.NewService(repo, client, sonyflake, zapLogger)
-	handler := user.NewHandler(zapLogger, configuration, service)
-	engine := routes.CreateRouter(recovery, cors, limiter, handler)
+	lockBuilder := compo.NewLockBuilder(client)
+	jwtService := user.NewJwtService(configuration, zapLogger, jwtRepo, service, lockBuilder)
+	jwtAuthMiddleware := middleware.NewJWTAuthMiddleware(configuration, jwtService)
+	limiterManager := compo.NewLimiterManager()
+	limiter := middleware.NewLimiterMiddleware(limiterManager)
+	handler := user.NewHandler(zapLogger, configuration, service, jwtService, client)
+	engine := routes.CreateRouter(recovery, cors, jwtAuthMiddleware, limiter, handler)
 	server := newHttpServer(configuration, engine)
 	app := newApp(configuration, zapLogger, server)
 	return app, func() {

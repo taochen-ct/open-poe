@@ -6,4 +6,5 @@ var ProviderSet = wire.NewSet(
 	NewRecoveryMiddleware,
 	NewCorsMiddleware,
 	NewLimiterMiddleware,
+	NewJWTAuthMiddleware,
 )

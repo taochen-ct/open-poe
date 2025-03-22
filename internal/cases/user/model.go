@@ -20,6 +20,11 @@ type User struct {
 	Password  string    `json:"-" gorm:"column:password;"`
 }
 
+// GetUid implementation jwtUser interface
+func (u *User) GetUid() string {
+	return u.UID
+}
+
 // BeforeCreate generate uuid, crypt password, check is exist
 func (u *User) BeforeCreate(tx *gorm.DB) error {
 	err := tx.Model(&User{}).Where("user_email = ? and is_deleted = false", u.Email).First(&User{}).Error
