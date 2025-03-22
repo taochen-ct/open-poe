@@ -1,9 +1,11 @@
 package user
 
 import (
+	"github.com/duke-git/lancet/v2/compare"
 	"github.com/duke-git/lancet/v2/validator"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
+	"github.com/golang-jwt/jwt/v4"
 	"go.uber.org/zap"
 	"open-poe/config"
 	"open-poe/internal/pkg/request"
@@ -75,11 +77,11 @@ func (h *Handler) saveToken(c *gin.Context, userUid string, timeOut time.Duratio
 	)
 	pipe.Expire(c, userUid, timeOut)
 	_, err := pipe.Exec(c)
-
+	// execute in pipe
 	if err != nil {
 		response.ServiceError(c, response.InternalServer("save token error; "+err.Error()))
 		return
-	} // execute in pipe
+	}
 }
 
 func (h *Handler) Login(ctx *gin.Context) {
@@ -93,6 +95,8 @@ func (h *Handler) Login(ctx *gin.Context) {
 		)
 		return
 	}
+
+	// repeat login
 	isLogin, err := h.rdb.Exists(ctx, userInfo.UID).Result()
 	if err != nil {
 		response.ServiceError(ctx, err)
@@ -102,12 +106,47 @@ func (h *Handler) Login(ctx *gin.Context) {
 		response.BusinessError(ctx, response.BusinessFail("repeat login"))
 		return
 	}
+
 	tokenOutput, _, err := h.auth.CreateToken(userInfo)
 	if err != nil {
 		response.ServiceError(ctx, err)
 		return
 	}
+
+	// set response head and save userinfo to redis
 	ctx.Header("Authorization", tokenOutput.AccessToken)
 	h.saveToken(ctx, tokenOutput.Uid, time.Hour, userInfo)
 	response.Success(ctx, tokenOutput)
+}
+
+func (h *Handler) UserInfo(ctx *gin.Context) {
+	useUid := ctx.Keys["id"].(string)
+	if validator.IsEmptyString(useUid) {
+		response.BusinessError(ctx, response.BadRequest("params error"))
+		return
+	}
+	userInfo, err := h.rdb.HGetAll(ctx, useUid).Result()
+	if err != nil {
+		response.ServiceError(ctx, err)
+		return
+	}
+	if !compare.Equal(userInfo, map[string]interface{}{}) {
+		response.Success(ctx, userInfo)
+		return
+	}
+	info, err := h.service.UserInfo(ctx, useUid)
+	if err != nil {
+		response.ServiceError(ctx, err)
+		return
+	}
+	response.Success(ctx, info)
+}
+
+func (h *Handler) Logout(ctx *gin.Context) {
+	err := h.auth.JoinBlackList(ctx, ctx.Keys["id"].(string), ctx.Keys["token"].(*jwt.Token))
+	if err != nil {
+		response.ServiceError(ctx, err)
+		return
+	}
+	response.Success(ctx, nil)
 }

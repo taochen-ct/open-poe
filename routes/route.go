@@ -19,9 +19,8 @@ func CreateRouter(
 	userHandler *user.Handler,
 ) *gin.Engine {
 
-	// create new gin engine, api group
+	// create new gin engine
 	router := gin.New()
-	apiGroup := router.Group("/api/v1")
 	// add middleware
 	router.Use(
 		gin.Logger(),                 // default logger
@@ -32,16 +31,12 @@ func CreateRouter(
 	// no auth
 	// test service health
 	router.GET("/ping", func(c *gin.Context) { c.String(http.StatusOK, "pong") })
-	apiGroup.GET("/test", func(c *gin.Context) {
-		res := make(map[string]string)
-		res["message"] = "Hello World!"
-		c.JSON(http.StatusOK, res)
-	})
+
+	// api
+	apiGroup := router.Group("/api/v1")
 	apiGroup.POST("/user/register", userHandler.Register)
 	apiGroup.POST("/user/login", userHandler.Login)
-
-	// auth
-	router.Use(JWTAuthMiddleware.Handler()) // auth middleware
-
+	apiGroup.GET("/user", JWTAuthMiddleware.Handler(), userHandler.UserInfo)
+	apiGroup.GET("/user/logout", JWTAuthMiddleware.Handler(), userHandler.Logout)
 	return router
 }

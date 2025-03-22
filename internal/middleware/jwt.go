@@ -5,6 +5,7 @@ import (
 	"github.com/duke-git/lancet/v2/validator"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
+	"net/http"
 	"open-poe/config"
 	"open-poe/internal/cases/user"
 	"open-poe/internal/compo"
@@ -38,7 +39,10 @@ func (m *JWTAuthMiddleware) Handler() gin.HandlerFunc {
 		})
 		claims := token.Claims.(*user.CustomerClaims)
 		if err != nil || m.service.IsInBlackList(c, claims.ID, userToken) {
-			response.BadRequestError(c, response.BadRequest("authorization expired", response.TokenError))
+			response.BadRequestError(
+				c,
+				response.NewError(http.StatusTemporaryRedirect, response.TokenError, "authorization expired"),
+			)
 			return
 		}
 

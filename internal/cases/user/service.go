@@ -132,13 +132,14 @@ type JwtUser interface {
 
 // CreateToken create token
 func (s *JwtService) CreateToken(jwtUser JwtUser) (*TokenOutput, *jwt.Token, error) {
+	userUid := jwtUser.GetUid()
 	innerToken := jwt.NewWithClaims(jwt.SigningMethodHS256, &CustomerClaims{
 		Key: GuardName,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Second * time.Duration(s.conf.Jwt.JwtTtl))),
 			NotBefore: jwt.NewNumericDate(time.Now().Add(time.Second * (-1000))),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			ID:        jwtUser.GetUid(),
+			ID:        userUid,
 		},
 	})
 	token, err := innerToken.SignedString([]byte(s.conf.Jwt.Secret))
@@ -146,7 +147,7 @@ func (s *JwtService) CreateToken(jwtUser JwtUser) (*TokenOutput, *jwt.Token, err
 		return nil, nil, err
 	}
 	return &TokenOutput{
-		Uid:         jwtUser.GetUid(),
+		Uid:         userUid,
 		AccessToken: token,
 		ExpiresIn:   int64(int(s.conf.Jwt.JwtTtl)),
 	}, innerToken, nil
