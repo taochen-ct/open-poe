@@ -37,6 +37,6 @@ func CreateRouter(
 	apiGroup.POST("/user/register", userHandler.Register)
 	apiGroup.POST("/user/login", userHandler.Login)
 	apiGroup.GET("/user", JWTAuthMiddleware.Handler(), userHandler.UserInfo)
-	apiGroup.GET("/user/logout", JWTAuthMiddleware.Handler(), userHandler.Logout)
+	apiGroup.POST("/user/logout", JWTAuthMiddleware.Handler(), userHandler.Logout)
 	return router
 }

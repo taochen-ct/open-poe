@@ -115,7 +115,7 @@ func (h *Handler) Login(ctx *gin.Context) {
 
 	// set response head and save userinfo to redis
 	ctx.Header("Authorization", tokenOutput.AccessToken)
-	h.saveToken(ctx, tokenOutput.Uid, time.Hour, userInfo)
+	h.saveToken(ctx, tokenOutput.Uid, time.Duration(tokenOutput.ExpiresIn)*time.Second, userInfo)
 	response.Success(ctx, tokenOutput)
 }
 
@@ -139,11 +139,17 @@ func (h *Handler) UserInfo(ctx *gin.Context) {
 		response.ServiceError(ctx, err)
 		return
 	}
+	h.saveToken(ctx, info.UID, 12*time.Hour, info)
 	response.Success(ctx, info)
 }
 
 func (h *Handler) Logout(ctx *gin.Context) {
 	err := h.auth.JoinBlackList(ctx, ctx.Keys["id"].(string), ctx.Keys["token"].(*jwt.Token))
+	if err != nil {
+		response.ServiceError(ctx, err)
+		return
+	}
+	err = h.rdb.Del(ctx, ctx.Keys["id"].(string)).Err()
 	if err != nil {
 		response.ServiceError(ctx, err)
 		return

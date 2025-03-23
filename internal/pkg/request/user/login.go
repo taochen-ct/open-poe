@@ -1,6 +1,6 @@
 package user
 
 type Login struct {
-	UserEmail string `json:"user_email"`
+	UserEmail string `json:"email"`
 	Password  string `json:"password"`
 }
